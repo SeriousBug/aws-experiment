@@ -17,7 +17,8 @@ export class LiquidBudgetingHandler extends NodejsFunction {
       minify: true,
       target: "es2020",
       tsconfig: "tsconfig.json",
-      // can't enable tree shaking because it breaks the build.
+      // Can't enable tree shaking because it breaks the build. Maybe try
+      // writing a custom build script for this instead?
     };
 
     super(scope, id, {

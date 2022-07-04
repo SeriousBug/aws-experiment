@@ -38,6 +38,7 @@
     "aws-lambda": "^1.0.7",
     "aws-sdk": "^2.1167.0",
     "constructs": "^10.0.0",
-    "source-map-support": "^0.5.21"
+    "source-map-support": "^0.5.21",
+    "zod": "^3.17.3"
   }
 }
