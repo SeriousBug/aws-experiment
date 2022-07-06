@@ -6,7 +6,7 @@
  * foo/bar.GET.ts -> matches GET /foo/bar
  * foo/bar/GET.ts -> matches GET /foo/bar/
  */
-import { getFiles } from "./getFiles";
+import { getFiles } from "./getFiles.js";
 import { HttpMethod } from "@aws-cdk/aws-apigatewayv2-alpha";
 import * as path from "path";
 

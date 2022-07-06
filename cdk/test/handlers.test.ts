@@ -1,53 +1,51 @@
-import { makeHandlerOptions } from "../utils/handlers";
+import { HttpMethod } from "@aws-cdk/aws-apigatewayv2-alpha";
+import test from "ava";
+import { makeHandlerOptions } from "../utils/handlers.js";
 
-describe("basic", () => {
-  test("simple", () => {
-    expect(makeHandlerOptions("", "foo.GET.ts")).toEqual({
-      entryPoint: "foo.GET.ts",
-      action: "GET",
-      route: "/foo",
-    });
-  });
-
-  test("nested", () => {
-    expect(makeHandlerOptions("", "ham/egg.GET.ts")).toEqual({
-      entryPoint: "ham/egg.GET.ts",
-      action: "GET",
-      route: "/ham/egg",
-    });
-  });
-
-  test("nested page", () => {
-    expect(makeHandlerOptions("", "ham/egg.GET.ts")).toEqual({
-      entryPoint: "ham/egg.GET.ts",
-      action: "GET",
-      route: "/ham/egg",
-    });
+test("simple", (t) => {
+  t.deepEqual(makeHandlerOptions("", "foo.GET.ts"), {
+    entryPoint: "foo.GET.ts",
+    action: HttpMethod.GET,
+    route: "/foo",
   });
 });
 
-describe("variables", () => {
-  test("simple", () => {
-    expect(makeHandlerOptions("", "[name].GET.ts")).toEqual({
-      entryPoint: "[name].GET.ts",
-      action: "GET",
-      route: "/{name}",
-    });
+test("nested", (t) => {
+  t.deepEqual(makeHandlerOptions("", "ham/egg.GET.ts"), {
+    entryPoint: "ham/egg.GET.ts",
+    action: HttpMethod.GET,
+    route: "/ham/egg",
   });
+});
 
-  test("nested", () => {
-    expect(makeHandlerOptions("", "[name]/foo.GET.ts")).toEqual({
-      entryPoint: "[name]/foo.GET.ts",
-      action: "GET",
-      route: "/{name}/foo",
-    });
+test("nested page", (t) => {
+  t.deepEqual(makeHandlerOptions("", "ham/egg.GET.ts"), {
+    entryPoint: "ham/egg.GET.ts",
+    action: HttpMethod.GET,
+    route: "/ham/egg",
   });
+});
 
-  test("greedy", () => {
-    expect(makeHandlerOptions("", "[name]/[...all].GET.ts")).toEqual({
-      entryPoint: "[name]/[...all].GET.ts",
-      action: "GET",
-      route: "/{name}/{all+}",
-    });
+test("variable, simple", (t) => {
+  t.deepEqual(makeHandlerOptions("", "[name].GET.ts"), {
+    entryPoint: "[name].GET.ts",
+    action: HttpMethod.GET,
+    route: "/{name}",
+  });
+});
+
+test("variable, nested", (t) => {
+  t.deepEqual(makeHandlerOptions("", "[name]/foo.GET.ts"), {
+    entryPoint: "[name]/foo.GET.ts",
+    action: HttpMethod.GET,
+    route: "/{name}/foo",
+  });
+});
+
+test("variable, greedy", (t) => {
+  t.deepEqual(makeHandlerOptions("", "[name]/[...all].GET.ts"), {
+    entryPoint: "[name]/[...all].GET.ts",
+    action: HttpMethod.GET,
+    route: "/{name}/{all+}",
   });
 });

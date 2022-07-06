@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 //import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
-import { LiquidBudgetingStack } from "./LiquidBudgetingStack";
+import { LiquidBudgetingStack } from "./LiquidBudgetingStack.js";
 
 const app = new cdk.App();
 new LiquidBudgetingStack(app, "LiquidBudgetingStack", {

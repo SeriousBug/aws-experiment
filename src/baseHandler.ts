@@ -1,4 +1,4 @@
-import { z, ZodType } from "zod";
+import type { ZodType } from "zod";
 
 import type {
   Context,
@@ -23,7 +23,7 @@ export function makeHandler<R, P = null, D = null>({
 }: {
   pathParamsValidator?: ZodType<P>;
   dataValidator?: ZodType<D>;
-  handler: (vars: { pathParams: P; data: D }) => Response<R>;
+  handler: (vars: { pathParams: P; data: D }) => Promise<Response<R>>;
 }) {
   return async function baseHandler(
     event: APIGatewayEvent,

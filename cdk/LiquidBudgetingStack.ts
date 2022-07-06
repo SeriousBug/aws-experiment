@@ -9,7 +9,7 @@ import {
 import { HttpApi, HttpStage } from "@aws-cdk/aws-apigatewayv2-alpha";
 import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
 import * as path from "path";
-import { findHandlers } from "./utils/handlers";
+import { findHandlers } from "./utils/handlers.js";
 
 export class LiquidBudgetingHandler extends NodejsFunction {
   constructor(scope: Construct, id: string, props?: NodejsFunctionProps) {
@@ -44,7 +44,7 @@ export class LiquidBudgetingStack extends Stack {
     });
 
     // For every TS file in the handlers dir, create a handler
-    const handlersDir = path.join(__dirname, "..", "src", "handlers");
+    const handlersDir = path.join(process.cwd(), "src", "handlers");
     findHandlers(handlersDir).forEach((handlerOptions) => {
       const name = path.relative(handlersDir, handlerOptions.entryPoint);
       const handler = new LiquidBudgetingHandler(this, `${name}-handler`, {
