@@ -5,29 +5,40 @@ import type {
   APIGatewayEvent,
   APIGatewayProxyResult,
 } from "aws-lambda";
+import { ErrorCode } from "./error.js";
 
 export type Error = {
-  code: string;
+  code: ErrorCode;
   message: string;
 };
+
+export function makeError(code: ErrorCode, message: string): Error {
+  return { code, message };
+}
 
 export type Response<D> = {
   status?: number;
   headers?: { [key: string]: string };
-} & ({ body: D } | { error: Error });
+} & ({ body?: D } | { error: Error });
 
 export function makeHandler<R, P = null, D = null>({
   pathParamsValidator,
   dataValidator,
+  authOptional,
   handler,
 }: {
   pathParamsValidator?: ZodType<P>;
   dataValidator?: ZodType<D>;
-  handler: (vars: { pathParams: P; data: D }) => Promise<Response<R>>;
+  authOptional?: boolean;
+  handler: (vars: {
+    pathParams: P;
+    data: D;
+    accountId: string;
+  }) => Promise<Response<R>>;
 }) {
   return async function baseHandler(
     event: APIGatewayEvent,
-    _context: Context,
+    context: Context,
   ): Promise<APIGatewayProxyResult> {
     let data: D | null = null;
     let pathParams: P | null = null;
@@ -58,12 +69,26 @@ export function makeHandler<R, P = null, D = null>({
       }
       pathParams = pathParamsValidator.parse(event.pathParameters);
     }
+    const userId = event.requestContext.authorizer?.jwt?.claims?.sub;
+    if (!authOptional && !userId) {
+      console.log("auth fail", JSON.stringify(context), JSON.stringify(event));
+      return {
+        body: JSON.stringify(
+          makeError(
+            ErrorCode.no_user,
+            "You must be authenticated to use this endpoint.",
+          ),
+        ),
+        statusCode: 500,
+      };
+    }
 
     // Casting these out when passing them to the handler. It's up to the
     // handler to attach the validators so it actually gets the data.
     const out = await handler({
       pathParams: pathParams as any,
       data: data as any,
+      accountId: userId as string,
     });
     if ("error" in out) {
       return {
@@ -72,7 +97,7 @@ export function makeHandler<R, P = null, D = null>({
       };
     } else {
       return {
-        body: JSON.stringify(out.body),
+        body: out.body ? JSON.stringify(out.body) : "",
         statusCode: out.status || 200,
         headers: out.headers,
       };

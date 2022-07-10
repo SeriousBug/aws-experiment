@@ -8,3 +8,10 @@ export const ddbClient = DynamoDBDocument.from(dbClient, {
     removeUndefinedValues: true,
   },
 });
+
+/** Name for the table. */
+export const TableName = "Primary";
+/** The name of the partition key attribute. */
+export const PK = "PK";
+/** The name of the sort key attribute. */
+export const SK = "SK";

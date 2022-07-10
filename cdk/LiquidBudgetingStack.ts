@@ -1,6 +1,8 @@
 import { Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { Runtime, Architecture } from "aws-cdk-lib/aws-lambda";
+import dynamodb from "aws-cdk-lib/aws-dynamodb";
+import cognito, { UserPool } from "aws-cdk-lib/aws-cognito";
 import {
   BundlingOptions,
   NodejsFunction,
@@ -8,8 +10,11 @@ import {
 } from "aws-cdk-lib/aws-lambda-nodejs";
 import { HttpApi, HttpStage } from "@aws-cdk/aws-apigatewayv2-alpha";
 import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
+import { HttpUserPoolAuthorizer } from "@aws-cdk/aws-apigatewayv2-authorizers-alpha";
 import * as path from "path";
 import { findHandlers } from "./utils/handlers.js";
+import { PK, SK, TableName } from "../src/db/client.js";
+import { Policy, PolicyStatement, Role } from "aws-cdk-lib/aws-iam";
 
 export class LiquidBudgetingHandler extends NodejsFunction {
   constructor(scope: Construct, id: string, props?: NodejsFunctionProps) {
@@ -38,9 +43,46 @@ export class LiquidBudgetingStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
+    // The primary mapping for the table.
+    //
+    // PK for the whole table is user ID.
+    //
+    // There are several entities stored in the table.
+    // - Users: USER#<user-id> -- name, email, and other user-specific information.
+    // - Budgets: BUDGET#<budget-id> -- name, max. These are templates for the actual budgets.
+    // - Monthly budgets: MONTH#<yyyy>.<mm>#BUDGET#<budget-id> -- name, max, usage total. These are the instantiated versions of the monthly budgets.
+    // - Spending items: ITEMMONTH#<yyyy>.<mm>#BUDGET#<budget-id>#ITEM#<item-id> -- name, amount, date, notes. These are the individual spending items within monthly budgets.
+    //
+    const table = new dynamodb.Table(this, TableName, {
+      tableName: TableName,
+      partitionKey: { name: PK, type: dynamodb.AttributeType.STRING },
+      sortKey: { name: SK, type: dynamodb.AttributeType.STRING },
+    });
+
+    const userPool = new UserPool(this, "LiquidUsers", {
+      // TODO: This will need to be enabled to allow people to sign up
+      selfSignUpEnabled: false,
+      userVerification: {
+        emailSubject: "Verify your email for Liquid Budgeting",
+        emailBody:
+          "Welcome to Liquid Budgeting. Your verification code is {####}",
+      },
+      signInAliases: {
+        email: true,
+        username: true,
+        preferredUsername: true,
+      },
+      mfa: cognito.Mfa.OPTIONAL,
+      mfaSecondFactor: {
+        otp: true,
+        sms: false,
+      },
+    });
+    const authorizer = new HttpUserPoolAuthorizer("Authorizor", userPool);
+
     // Create the API that all handlers will be attached to
     const api = new HttpApi(this, "budget-api", {
-      description: "Handles all budget related APIs.",
+      defaultAuthorizer: authorizer,
     });
 
     // For every TS file in the handlers dir, create a handler
@@ -50,6 +92,8 @@ export class LiquidBudgetingStack extends Stack {
       const handler = new LiquidBudgetingHandler(this, `${name}-handler`, {
         entry: handlerOptions.entryPoint,
       });
+      table.grantReadWriteData(handler);
+
       // Each handler needs an integration
       const integration = new HttpLambdaIntegration(
         `${name}-integration`,

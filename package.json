@@ -11,10 +11,15 @@
     "test": "ava"
   },
   "devDependencies": {
+    "@aws-cdk/aws-apigatewayv2-authorizers-alpha": "^2.31.0-alpha.0",
+    "@aws-cdk/aws-apigatewayv2-integrations-alpha": "^2.31.0-alpha.0",
+    "@aws-cdk/aws-apigatewayv2-alpha": "^2.31.0-alpha.0",
+    "aws-cdk-lib": "2.31.0",
+    "@aws-sdk/types": "^3.110.0",
     "@types/archiver": "^5.3.1",
     "@types/aws-lambda": "^8.10.101",
     "@types/fs-extra": "^9.0.13",
-    "@types/node": "10.17.27",
+    "@types/node": "^16.0.0",
     "@types/prettier": "2.6.0",
     "@typescript-eslint/eslint-plugin": "^5.30.4",
     "@typescript-eslint/parser": "^5.30.4",
@@ -31,11 +36,9 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
-    "@aws-cdk/aws-apigatewayv2-alpha": "^2.30.0-alpha.0",
-    "@aws-cdk/aws-apigatewayv2-integrations-alpha": "^2.30.0-alpha.0",
     "@aws-sdk/client-dynamodb": "^3.121.0",
     "@aws-sdk/lib-dynamodb": "^3.121.0",
-    "aws-cdk-lib": "2.30.0",
+    "@aws-sdk/smithy-client": "^3.110.0",
     "aws-lambda": "^1.0.7",
     "constructs": "^10.0.0",
     "nanoid": "^4.0.0",
@@ -49,6 +52,8 @@
     "extensions": {
       "ts": "module"
     },
-    "nodeArguments": ["--loader=ts-node/esm"]
+    "nodeArguments": [
+      "--loader=ts-node/esm"
+    ]
   }
 }
