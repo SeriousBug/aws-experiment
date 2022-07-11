@@ -82,7 +82,7 @@ export class LiquidBudgetingStack extends Stack {
       oAuth: {
         callbackUrls: [
           // TODO: should only allow this for local development
-          "https://localhost:3000",
+          "http://localhost:3000/auth/login_callback",
         ],
         flows: {
           authorizationCodeGrant: true,
@@ -108,7 +108,7 @@ export class LiquidBudgetingStack extends Stack {
       corsPreflight: {
         allowOrigins: [
           // TODO: only during development
-          "https://localhost:3000",
+          "http://localhost:3000",
         ],
       },
     });

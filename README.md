@@ -9,6 +9,11 @@ yarn cdk deploy
 yarn cdk destroy
 ```
 
+You may need to change some values to deploy things if you are not me. Try
+deploying and see what errors you get.
+
+See the `ui` folder for the user interface.
+
 ## Folder Layout
 
 - `cdk`
