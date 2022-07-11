@@ -1,3 +1,4 @@
+import fs from "fs";
 import { Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { Runtime, Architecture } from "aws-cdk-lib/aws-lambda";
@@ -14,7 +15,6 @@ import { HttpUserPoolAuthorizer } from "@aws-cdk/aws-apigatewayv2-authorizers-al
 import * as path from "path";
 import { findHandlers } from "./utils/handlers.js";
 import { PK, SK, TableName } from "../src/db/client.js";
-import { Policy, PolicyStatement, Role } from "aws-cdk-lib/aws-iam";
 
 export class LiquidBudgetingHandler extends NodejsFunction {
   constructor(scope: Construct, id: string, props?: NodejsFunctionProps) {
@@ -78,11 +78,39 @@ export class LiquidBudgetingStack extends Stack {
         sms: false,
       },
     });
-    const authorizer = new HttpUserPoolAuthorizer("Authorizor", userPool);
+    userPool.addClient("LiquidBudgeting", {
+      oAuth: {
+        callbackUrls: [
+          // TODO: should only allow this for local development
+          "https://localhost:3000",
+        ],
+        flows: {
+          authorizationCodeGrant: true,
+          implicitCodeGrant: true,
+        },
+      },
+      authFlows: {
+        userPassword: true,
+      },
+    });
+    userPool.addDomain("CognitoDomain", {
+      cognitoDomain: {
+        // TODO: For actual development use a real domain
+        domainPrefix: "liquidbudgetingtest",
+      },
+    });
+
+    const authorizer = new HttpUserPoolAuthorizer("Authorizer", userPool);
 
     // Create the API that all handlers will be attached to
     const api = new HttpApi(this, "budget-api", {
       defaultAuthorizer: authorizer,
+      corsPreflight: {
+        allowOrigins: [
+          // TODO: only during development
+          "https://localhost:3000",
+        ],
+      },
     });
 
     // For every TS file in the handlers dir, create a handler
@@ -105,12 +133,6 @@ export class LiquidBudgetingStack extends Stack {
         methods: [handlerOptions.action],
         integration,
       });
-    });
-
-    // Deploy this API as a stage
-    new HttpStage(this, "Stage", {
-      httpApi: api,
-      stageName: "test",
     });
   }
 }
