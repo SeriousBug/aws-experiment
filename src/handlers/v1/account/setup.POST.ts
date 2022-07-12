@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { makeHandler } from "../../../baseHandler.js";
-import { AccountUtils } from "../../../db/account.js";
+import { Account } from "../../../db/account.js";
 
 export const handler = makeHandler({
   dataValidator: z.object({
@@ -8,7 +8,7 @@ export const handler = makeHandler({
     work: z.string().min(1).optional(),
   }),
   handler: async ({ data, accountId }) => {
-    await AccountUtils.put({
+    await Account.put({
       accountId,
       ...data,
     });

@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { makeHandler } from "../../../baseHandler.js";
-import { BudgetUtils } from "../../../db/budget.js";
+import { Budget } from "../../../db/budget.js";
 
 export const handler = makeHandler({
   dataValidator: z.object({
@@ -11,12 +11,10 @@ export const handler = makeHandler({
   }),
   handler: async ({ data, accountId }) => {
     const budgetId = nanoid();
-    await BudgetUtils.put({
+    await Budget.put({
       accountId,
-      budget: {
-        budgetId,
-        ...data,
-      },
+      budgetId,
+      ...data,
     });
 
     return {
