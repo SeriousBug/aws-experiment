@@ -1,20 +1,21 @@
-import fs from "fs";
-import { Stack, StackProps } from "aws-cdk-lib";
+import { Duration, Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { Runtime, Architecture } from "aws-cdk-lib/aws-lambda";
 import dynamodb from "aws-cdk-lib/aws-dynamodb";
+import sqs from "aws-cdk-lib/aws-sqs";
 import cognito, { UserPool } from "aws-cdk-lib/aws-cognito";
 import {
   BundlingOptions,
   NodejsFunction,
   NodejsFunctionProps,
 } from "aws-cdk-lib/aws-lambda-nodejs";
-import { HttpApi, HttpStage } from "@aws-cdk/aws-apigatewayv2-alpha";
+import { HttpApi } from "@aws-cdk/aws-apigatewayv2-alpha";
 import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
 import { HttpUserPoolAuthorizer } from "@aws-cdk/aws-apigatewayv2-authorizers-alpha";
 import * as path from "path";
 import { findHandlers } from "./utils/handlers.js";
 import { PK, SK, TableName } from "../src/db/client.js";
+import { SqsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 
 export class LiquidBudgetingHandler extends NodejsFunction {
   constructor(scope: Construct, id: string, props?: NodejsFunctionProps) {
@@ -58,6 +59,27 @@ export class LiquidBudgetingStack extends Stack {
       partitionKey: { name: PK, type: dynamodb.AttributeType.STRING },
       sortKey: { name: SK, type: dynamodb.AttributeType.STRING },
     });
+
+    // // A queue for deletion requests. Delete operations, especially deleting an
+    // // entire account, can be hard to do. It might not get done in a single
+    // // execution of a Lambda, so we'll put it in a queue until the deletion
+    // // completes. Each lambda can execute at most up to 15 minutes, so if the
+    // // deletion is still not complete after that, the lambda will timeout and
+    // // the queue will launch a new one.
+    // const deleteQueueProcessTimeout = 15;
+    // const deleteQueue = new sqs.Queue(this, "Queue", {
+    //   // order is unimportant, we're just gonna delete everything
+    //   fifo: false,
+    //   // max allowed, keep everything in the queue until we finish them
+    //   retentionPeriod: Duration.days(14),
+    //   // after the lambda times out, launch another one.
+    //   visibilityTimeout: Duration.minutes(deleteQueueProcessTimeout + 1),
+    // });
+    // const deleteHandler = new LiquidBudgetingHandler(this, "DeleteHandler", {
+    //   entry: "<TODO>",
+    //   timeout: Duration.minutes(deleteQueueProcessTimeout),
+    // });
+    // deleteHandler.addEventSource(new SqsEventSource(deleteQueue, {}));
 
     const userPool = new UserPool(this, "LiquidUsers", {
       // TODO: This will need to be enabled to allow people to sign up

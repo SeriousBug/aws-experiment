@@ -11,10 +11,9 @@
     "test": "ava"
   },
   "devDependencies": {
+    "@aws-cdk/aws-apigatewayv2-alpha": "^2.31.0-alpha.0",
     "@aws-cdk/aws-apigatewayv2-authorizers-alpha": "^2.31.0-alpha.0",
     "@aws-cdk/aws-apigatewayv2-integrations-alpha": "^2.31.0-alpha.0",
-    "@aws-cdk/aws-apigatewayv2-alpha": "^2.31.0-alpha.0",
-    "aws-cdk-lib": "2.31.0",
     "@aws-sdk/types": "^3.110.0",
     "@types/archiver": "^5.3.1",
     "@types/aws-lambda": "^8.10.101",
@@ -26,6 +25,7 @@
     "archiver": "^5.3.1",
     "ava": "^4.3.0",
     "aws-cdk": "2.30.0",
+    "aws-cdk-lib": "2.31.0",
     "esbuild": "^0.14.48",
     "eslint": "^8.19.0",
     "eslint-config-prettier": "^8.5.0",

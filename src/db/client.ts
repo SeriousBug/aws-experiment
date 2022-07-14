@@ -95,6 +95,25 @@ export function makeFacet<Entity extends Record<string, any>>(name: string) {
         if (!Items) return [];
         return Items.map(item2entity);
       },
+      delete: async function delete_(
+        pkValue: Entity[PKType],
+        skValues: Pick<Entity, SKTypes>,
+      ) {
+        await ddbClient.delete({
+          TableName,
+          Key: {
+            [PK]: pkValue,
+            [SK]: makeSK(skValues, sks),
+          },
+        });
+      },
+      deleteAll: async function deleteAll(pkValue: Entity[PKType]) {
+        await ddbClient.batchWrite({
+          RequestItems: {
+            [TableName]: [],
+          },
+        });
+      },
     };
   };
 }
