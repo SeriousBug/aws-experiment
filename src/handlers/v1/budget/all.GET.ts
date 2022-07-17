@@ -1,11 +1,11 @@
 import { makeHandler } from "../../../baseHandler.js";
-import { Budget } from "../../../db/budget.js";
+import { BudgetTemplate } from "../../../db/budgetTemplate.js";
 
 export const handler = makeHandler({
   handler: async ({ accountId }) => {
     return {
       body: {
-        budgets: await Budget.getAll(accountId),
+        budgets: await BudgetTemplate.getAll(accountId),
       },
     };
   },

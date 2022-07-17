@@ -1,13 +1,13 @@
 import { z } from "zod";
 import { makeHandler } from "../../../baseHandler.js";
-import { Budget } from "../../../db/budget.js";
+import { BudgetTemplate } from "../../../db/budgetTemplate.js";
 
 export const handler = makeHandler({
   pathParamsValidator: z.object({
-    budgetId: z.string(),
+    templateId: z.string(),
   }),
-  handler: async ({ accountId, pathParams: { budgetId } }) => {
-    await Budget.delete(accountId, { budgetId });
+  handler: async ({ accountId, pathParams: { templateId } }) => {
+    await BudgetTemplate.delete(accountId, { templateId });
     // TODO: Delete all the budget items associated with this budget
     // Or, move the spending items into a new budget?
     return {};

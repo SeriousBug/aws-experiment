@@ -41,14 +41,33 @@ export function makeFacet<Entity extends Record<string, any>>(name: string) {
      */
     const skPrefix = name;
 
-    function makeSK(entity: Pick<Entity, SKTypes>, sks: SKTypes[]): string {
-      return [skPrefix, ...sks.flatMap((sk) => [sk, entity[sk]])].join("#");
+    function makeSK(entity: Partial<Pick<Entity, SKTypes>>): string {
+      let partialSK = false;
+      const skValues: (SKTypes | Entity[SKTypes] | string)[] = [skPrefix];
+      for (const sk of sks) {
+        const value: Entity[SKTypes] | undefined = entity[sk];
+        // If we find an undefined value in the entity, that means the SK is
+        // partial. If that's the case, we must also not find any of the future
+        if (partialSK === false && value === undefined) {
+          partialSK = true;
+        } else if (partialSK && value !== undefined) {
+          throw new Error(
+            `Entity ${name} query has a partial entity that's missing key ${String(
+              sk,
+            )}. You must use sks'es in the order they were listed when creating the facet.`,
+          );
+        }
+        if (value === undefined) continue;
+        skValues.push(sk);
+        skValues.push(value);
+      }
+      return skValues.join("#");
     }
 
     function entity2item(entity: Entity): Record<string, any> {
       return {
         [PK]: entity[pk],
-        [SK]: makeSK(entity, sks),
+        [SK]: makeSK(entity),
         ...entity,
       };
     }
@@ -72,7 +91,7 @@ export function makeFacet<Entity extends Record<string, any>>(name: string) {
           TableName,
           Key: {
             [PK]: pkValue,
-            [SK]: makeSK(skValues, sks),
+            [SK]: makeSK(skValues),
           },
         });
         if (!Item) return undefined;
@@ -80,6 +99,7 @@ export function makeFacet<Entity extends Record<string, any>>(name: string) {
       },
       getAll: async function getAll(
         pkValue: Entity[PKType],
+        skValues?: Partial<Pick<Entity, SKTypes>>,
       ): Promise<Entity[]> {
         const { Items } = await ddbClient.query({
           TableName,
@@ -89,7 +109,7 @@ export function makeFacet<Entity extends Record<string, any>>(name: string) {
             ":PK": PK,
             ":SK": SK,
             ":pkValue": pkValue,
-            ":skPrefix": skPrefix,
+            ":skPrefix": makeSK(skValues ?? {}),
           },
         });
         if (!Items) return [];
@@ -103,7 +123,7 @@ export function makeFacet<Entity extends Record<string, any>>(name: string) {
           TableName,
           Key: {
             [PK]: pkValue,
-            [SK]: makeSK(skValues, sks),
+            [SK]: makeSK(skValues),
           },
         });
       },
