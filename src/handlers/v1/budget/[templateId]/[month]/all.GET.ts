@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { makeHandler } from "../../../../baseHandler.js";
-import { SpendingItem } from "../../../../db/spendingItem.js";
+import { makeHandler } from "../../../../../baseHandler.js";
+import { SpendingItem } from "../../../../../db/spendingItem.js";
 
 export const handler = makeHandler({
   pathParamsValidator: z.object({
