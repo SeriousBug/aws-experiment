@@ -1,9 +1,9 @@
 import type { NextPage } from "next";
-import { Container, Text } from "@nextui-org/react";
 import { useEffect } from "react";
 import { z } from "zod";
 import { authSlice } from "../../src/store/auth";
 import { useAppDispatch } from "../../src/store";
+import { Container, Text } from "@chakra-ui/react";
 
 const LOGIN_RESPONSE_SCHEMA = z.object({
   code: z.string().min(1),

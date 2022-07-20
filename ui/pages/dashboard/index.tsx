@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import { Button, Container, Link, Spacer, Text } from "@nextui-org/react";
+import { Container, Link, Button } from "@chakra-ui/react";
 
 const Home: NextPage = () => {
   return (
